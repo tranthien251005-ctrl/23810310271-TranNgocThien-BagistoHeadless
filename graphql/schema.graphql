@@ -1,0 +1,39 @@
+type Query {
+    products(
+        first: Int
+        page: Int
+        search: String @where(operator: "like")
+        orderBy: String
+        sortedBy: String
+    ): ProductList
+        @paginate(
+            model: "Webkul\\Product\\Models\\Product"
+            scopes: ["channel", "locale"]
+        )
+}
+
+type Product {
+    id: ID!
+    name: String!
+    price: Float
+    description: String
+    url_key: String
+    sku: String
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+type ProductList {
+    data: [Product!]!
+    paginatorInfo: PaginatorInfo!
+}
+
+type PaginatorInfo {
+    total: Int!
+    count: Int!
+    perPage: Int!
+    currentPage: Int!
+    lastPage: Int!
+}
+
+scalar DateTime

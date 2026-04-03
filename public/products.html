@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Danh sách sản phẩm - Trần Ngọc Thiện</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 20px;
+            }
+
+            /* Header styling */
+            .header {
+                background: linear-gradient(135deg, #ff6b6b, #feca57);
+                color: white;
+                padding: 30px;
+                border-radius: 15px;
+                text-align: center;
+                margin-bottom: 40px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                animation: fadeInDown 0.8s ease;
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+                margin-bottom: 10px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+
+            .header .student-info {
+                font-size: 1.3rem;
+                background: rgba(0, 0, 0, 0.2);
+                display: inline-block;
+                padding: 10px 25px;
+                border-radius: 50px;
+                margin-top: 10px;
+            }
+
+            /* Product grid */
+            .products-container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .products-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 25px;
+            }
+
+            /* Card styling */
+            .product-card {
+                background: white;
+                border-radius: 15px;
+                overflow: hidden;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+                transition:
+                    transform 0.3s ease,
+                    box-shadow 0.3s ease;
+                animation: fadeInUp 0.6s ease;
+            }
+
+            .product-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            }
+
+            .product-card .card-body {
+                padding: 20px;
+            }
+
+            .product-card h3 {
+                color: #333;
+                font-size: 1.2rem;
+                margin-bottom: 12px;
+                line-height: 1.4;
+                min-height: 55px;
+            }
+
+            .product-card .price {
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: #e74c3c;
+                margin: 15px 0;
+            }
+
+            .product-card .description {
+                color: #666;
+                font-size: 0.85rem;
+                line-height: 1.5;
+                margin-bottom: 15px;
+                max-height: 60px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .product-card button {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                width: 100%;
+                font-size: 1rem;
+                font-weight: bold;
+                transition: opacity 0.3s ease;
+            }
+
+            .product-card button:hover {
+                opacity: 0.85;
+            }
+
+            /* Loading and error states */
+            .loading {
+                text-align: center;
+                padding: 50px;
+                color: white;
+                font-size: 1.5rem;
+            }
+
+            .error {
+                text-align: center;
+                padding: 50px;
+                color: #ff6b6b;
+                background: white;
+                border-radius: 15px;
+                margin: 20px;
+                font-size: 1.2rem;
+            }
+
+            /* Animations */
+            @keyframes fadeInDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Footer */
+            .footer {
+                text-align: center;
+                margin-top: 40px;
+                padding: 20px;
+                color: white;
+                opacity: 0.8;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="products-container">
+            <!-- Header hiển thị Họ tên và MSSV -->
+            <div class="header">
+                <h1>🛍️ Cửa hàng của Trần Ngọc Thiện</h1>
+                <div class="student-info">
+                    📚 Trần Ngọc Thiện - MSSV: 23810310271
+                </div>
+            </div>
+
+            <!-- Container hiển thị danh sách sản phẩm -->
+            <div id="products-grid" class="products-grid">
+                <div class="loading">⏳ Đang tải sản phẩm...</div>
+            </div>
+            <div class="footer">
+                © 2025 - Dữ liệu được lấy từ Bagisto GraphQL API
+            </div>
+        </div>
+
+        <script>
+            /**
+             * ================================================
+             * PHẦN COMMENT GIẢI THÍCH CODE GỌI API
+             * ================================================
+             *
+             * 1. Mục đích: Gọi GraphQL API của Bagisto để lấy danh sách
+             *    05 sản phẩm mới nhất (Query 2 từ yêu cầu bài tập)
+             *
+             * 2. Phương thức: Sử dụng Fetch API (JavaScript hiện đại)
+             *    - fetch(): Gọi HTTP request đến server
+             *    - method: POST (GraphQL thường dùng POST)
+             *    - headers: Định dạng dữ liệu gửi đi là JSON
+             *    - body: Chứa nội dung GraphQL query
+             *
+             * 3. GraphQL Query được gửi đi:
+             *    - products(first: 5): Lấy 5 sản phẩm đầu tiên
+             *    - data: Chứa mảng các sản phẩm
+             *    - Các field: id, name, price, description, url_key
+             *
+             * 4. Xử lý response:
+             *    - .then(response => response.json()): Chuyển response sang JSON
+             *    - .then(data => {...}): Xử lý dữ liệu nhận được
+             *    - .catch(error => {...}): Xử lý lỗi nếu có
+             *
+             * 5. Hiển thị dữ liệu:
+             *    - Duyệt qua mảng sản phẩm
+             *    - Tạo HTML cho mỗi thẻ (card)
+             *    - Định dạng giá tiền (VNĐ)
+             *    - Chèn vào DOM
+             * ================================================
+             */
+
+            // Định nghĩa URL của GraphQL endpoint
+            // Lưu ý: Thay đổi port và đường dẫn cho phù hợp với cấu hình của bạn
+            const GRAPHQL_URL =
+                "http://localhost:8888/bagisto-store/public/graphql";
+
+            // Hoặc nếu dùng php artisan serve, dùng URL:
+            // const GRAPHQL_URL = 'http://localhost:8000/graphql';
+
+            /**
+             * Hàm gọi GraphQL API và hiển thị sản phẩm
+             * Sử dụng async/await để xử lý bất đồng bộ
+             */
+            async function fetchAndDisplayProducts() {
+                // Lấy container để hiển thị sản phẩm
+                const container = document.getElementById("products-grid");
+
+                // GraphQL Query - Lấy 05 sản phẩm mới nhất (Query 2)
+                // Giải thích query:
+                // - products: Trường (field) chính trong schema GraphQL
+                // - first: 5: Tham số, chỉ lấy 5 sản phẩm đầu tiên
+                // - data: Chứa mảng kết quả
+                //   - id: Mã sản phẩm
+                //   - name: Tên sản phẩm
+                //   - price: Giá sản phẩm (dạng số)
+                //   - description: Mô tả sản phẩm
+                //   - url_key: Đường dẫn thân thiện với SEO
+                const query = `
+                query {
+                    products(first: 5) {
+                        data {
+                            id
+                            name
+                            price
+                            description
+                            url_key
+                        }
+                    }
+                }
+            `;
+
+                try {
+                    // Gọi fetch API - Đây là lệnh gọi HTTP đến GraphQL server
+                    const response = await fetch(GRAPHQL_URL, {
+                        method: "POST", // Phương thức HTTP
+                        headers: {
+                            "Content-Type": "application/json", // Định dạng dữ liệu gửi
+                            Accept: "application/json", // Định dạng dữ liệu nhận
+                        },
+                        body: JSON.stringify({ query }), // Chuyển query thành JSON string
+                    });
+
+                    // Kiểm tra response có OK không
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`,
+                        );
+                    }
+
+                    // Chuyển response thành JSON
+                    const result = await response.json();
+
+                    // Kiểm tra lỗi từ GraphQL
+                    if (result.errors) {
+                        throw new Error(result.errors[0].message);
+                    }
+
+                    // Lấy mảng sản phẩm từ kết quả trả về
+                    const products = result.data.products.data;
+
+                    // Xử lý khi không có sản phẩm
+                    if (!products || products.length === 0) {
+                        container.innerHTML =
+                            '<div class="error">😞 Không có sản phẩm nào. Vui lòng tạo sản phẩm trong Admin Panel!</div>';
+                        return;
+                    }
+
+                    // Tạo HTML cho từng sản phẩm (dạng card)
+                    const productsHTML = products
+                        .map(
+                            (product) => `
+                    <div class="product-card">
+                        <div class="card-body">
+                            <h3>${escapeHtml(product.name)}</h3>
+                            <div class="price">
+                                ${formatCurrency(product.price)}
+                            </div>
+                            <div class="description">
+                                ${product.description ? escapeHtml(product.description.substring(0, 100)) + (product.description.length > 100 ? "..." : "") : "Không có mô tả"}
+                            </div>
+                            <button onclick="showProductDetail('${product.id}', '${escapeHtml(product.name)}', '${formatCurrency(product.price)}')">
+                                🔍 Xem chi tiết
+                            </button>
+                        </div>
+                    </div>
+                `,
+                        )
+                        .join(""); // join('') để nối các thẻ HTML lại với nhau
+
+                    // Chèn HTML vào container
+                    container.innerHTML = productsHTML;
+                } catch (error) {
+                    // Xử lý lỗi: hiển thị thông báo lỗi
+                    console.error("Lỗi khi gọi API:", error);
+                    container.innerHTML = `
+                    <div class="error">
+                        ❌ Lỗi khi tải dữ liệu: ${error.message}<br>
+                        Vui lòng kiểm tra:<br>
+                        - GraphQL endpoint có đúng không (${GRAPHQL_URL})<br>
+                        - Apache đã chạy chưa<br>
+                        - Bagisto đã được cài đặt đúng chưa
+                    </div>
+                `;
+                }
+            }
+
+            /**
+             * Hàm định dạng tiền tệ (Việt Nam Đồng)
+             * @param {number} amount - Số tiền cần định dạng
+             * @returns {string} - Chuỗi đã định dạng (vd: 150,000 ₫)
+             */
+            function formatCurrency(amount) {
+                if (!amount && amount !== 0) return "0 ₫";
+                // Dùng toLocaleString để định dạng số theo chuẩn Việt Nam
+                return amount.toLocaleString("vi-VN") + " ₫";
+            }
+
+            /**
+             * Hàm hiển thị chi tiết sản phẩm (alert popup)
+             * @param {string} id - Mã sản phẩm
+             * @param {string} name - Tên sản phẩm
+             * @param {string} price - Giá đã định dạng
+             */
+            function showProductDetail(id, name, price) {
+                alert(
+                    `📦 Chi tiết sản phẩm:\n\n🆔 Mã SP: ${id}\n📝 Tên: ${name}\n💰 Giá: ${price}\n\n🔗 Xem thêm tại: /product/${id}`,
+                );
+            }
+
+            /**
+             * Hàm bảo mật: chuyển đổi các ký tự đặc biệt trong HTML
+             * Tránh lỗ hổng XSS (Cross-Site Scripting)
+             * @param {string} str - Chuỗi cần escape
+             * @returns {string} - Chuỗi đã được bảo mật
+             */
+            function escapeHtml(str) {
+                if (!str) return "";
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#39;");
+            }
+
+            // Khi trang web tải xong, gọi hàm lấy và hiển thị sản phẩm
+            document.addEventListener(
+                "DOMContentLoaded",
+                fetchAndDisplayProducts,
+            );
+        </script>
+    </body>
+</html>

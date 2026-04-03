@@ -1,0 +1,4 @@
+{
+    "intelephense.environment.includePaths": ["C:/xampp/php"],
+    "intelephense.files.maxSize": 5000000
+}

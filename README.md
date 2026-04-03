@@ -21,9 +21,13 @@
 
 ![Phần 1](./screenshots/phan1.png)
 
-### GraphQL Playground - Query tùy biến
+### Phần 2
 
-![GraphQL Playground](./screenshots/phan2.png)
+![Phần 2](./screenshots/phan2.png)
+
+### Phần 3
+
+![Phần 3](./screenshots/phan3.png)
 
 ---
 

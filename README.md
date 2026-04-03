@@ -19,11 +19,11 @@
 
 ### Phần 1
 
-![Phần 1](./screenshots/phan1.png.png)
+![Phần 1](./screenshots/phan1.png)
 
 ### GraphQL Playground - Query tùy biến
 
-![GraphQL Playground](./screenshots/phan2.png.png)
+![GraphQL Playground](./screenshots/phan2.png)
 
 ---
 
